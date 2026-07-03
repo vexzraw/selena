@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Para Selena</title>
+<style>
+  /* ===== Reset ===== */
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: Helvetica, Arial, sans-serif;
+    color: #FFFFFF;
+    overflow-x: hidden;
+    min-height: 100vh;
+    position: relative;
+    background: #1a1a2e;
+  }
+
+  /* ===== Fondo con gradiente cálido ===== */
+  .bg-gradient {
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(180deg,
+      #2C3E5C 0%,
+      #3D5A80 12%,
+      #5A6E8F 25%,
+      #B5765A 45%,
+      #C97B5F 60%,
+      #D4A574 80%,
+      #F5E6D3 100%);
+    z-index: -2;
+  }
+
+  /* Textura sutil */
+  .bg-gradient::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 20% 30%, rgba(255,255,255,0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(201,123,95,0.15) 0%, transparent 50%);
+    pointer-events: none;
+  }
+
+  /* ===== Canvas estrellas multicolor ===== */
+  #stars-canvas {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* ===== Hint inicial ===== */
+  #hint {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 0.9rem 1.8rem;
+    border-radius: 30px;
+    font-size: 0.92rem;
+    z-index: 100;
+    opacity: 0;
+    animation: hintShow 2s ease forwards;
+    pointer-events: none;
+    white-space: nowrap;
+    border: 1px solid rgba(255,255,255,0.18);
+    letter-spacing: 0.02em;
+  }
+
+  @keyframes hintShow {
+    0%   { opacity: 0; transform: translate(-50%, -45%); }
+    15%  { opacity: 1; transform: translate(-50%, -50%); }
+    85%  { opacity: 1; transform: translate(-50%, -50%); }
+    100% { opacity: 0; transform: translate(-50%, -55%); }
+  }
+
+  /* ===== Hero ===== */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem 1.5rem;
+    position: relative;
+    z-index: 2;
+    text-align: center;
+  }
+
+  .hero h1 {
+    font-size: clamp(3.2rem, 14vw, 5.5rem);
+    font-weight: 900;
+    margin-bottom: 1.8rem;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    background: linear-gradient(135deg, #FFF8F0 0%, #FFE5D0 50%, #FFC9A0 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: titleIn 1.6s cubic-bezier(0.16, 1, 0.3, 1);
+    filter: drop-shadow(0 4px 25px rgba(201, 123, 95, 0.45));
+  }
+
+  .hero .message {
+    font-size: clamp(0.95rem, 4.3vw, 1.12rem);
+    max-width: 560px;
+    line-height: 1.8;
+    color: #FFF8F0;
+    opacity: 0;
+    animation: messageIn 1.5s ease 0.5s forwards;
+    text-shadow: 0 2px 12px rgba(0,0,0,0.35);
+    font-weight: 300;
+  }
+
+  @keyframes titleIn {
+    from { opacity: 0; transform: translateY(45px) scale(0.92); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  @keyframes messageIn {
+    from { opacity: 0; transform: translateY(25px); }
+    to   { opacity: 0.95; transform: translateY(0); }
+  }
+
+  .scroll-indicator {
+    position: absolute;
+    bottom: 2.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 28px;
+    height: 46px;
+    border: 2px solid rgba(255,255,255,0.6);
+    border-radius: 14px;
+    display: flex;
+    justify-content: center;
+    padding-top: 7px;
+    animation: floatHint 2s ease infinite;
+  }
+
+  .scroll-indicator::after {
+    content: '';
+    width: 4px;
+    height: 8px;
+    background: rgba(255,255,255,0.9);
+    border-radius: 2px;
+    animation: scrollDown 1.6s ease infinite;
+  }
+
+  @keyframes scrollDown {
+    0%   { transform: translateY(0); opacity: 1; }
+    100% { transform: translateY(18px); opacity: 0; }
+  }
+
+  @keyframes floatHint {
+    0%,100% { transform: translateX(-50%) translateY(0); }
+    50%     { transform: translateX(-50%) translateY(-5px); }
+  }
+
+  /* ===== Secciones de scroll ===== */
+  .scroll-section {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 3rem 1.5rem;
+    position: relative;
+    z-index: 2;
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(70px) scale(0.92);
+    transition: opacity 1.3s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 1.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  .reveal-section-text {
+    font-size: clamp(1rem, 4.5vw, 1.25rem);
+    text-align: center;
+    max-width: 480px;
+    margin-top: 2rem;
+    line-height: 1.7;
+    color: #FFF8F0;
+    text-shadow: 0 2px 12px rgba(0,0,0,0.35);
+    font-weight: 300;
+    font-style: italic;
+  }
+
+  /* ===== Contenedor visual ===== */
+  .visual-container {
+    width: 100%;
+    max-width: 340px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .visual-container svg {
+    width: 100%;
+    height: auto;
+    filter: drop-shadow(0 12px 35px rgba(0,0,0,0.25));
+  }
+
+  /* ===== Animaciones específicas ===== */
+  .flower-petal {
+    transform-origin: 100px 100px;
+    animation: petalBreathe 3s ease infinite alternate;
+  }
+  @keyframes petalBreathe {
+    from { transform: rotate(0deg) scale(1); }
+    to   { transform: rotate(8deg) scale(1.05); }
+  }
+
+  .heart-beat {
+    transform-origin: 100px 100px;
+    animation: heartbeat 1.4s ease infinite;
+  }
+  @keyframes heartbeat {
+    0%, 100% { transform: scale(1); }
+    15%      { transform: scale(1.12); }
+    30%      { transform: scale(1); }
+    45%      { transform: scale(1.08); }
+  }
+
+  .moon-glow {
+    animation: moonGlow 4s ease infinite alternate;
+  }
+  @keyframes moonGlow {
+    from { filter: drop-shadow(0 0 8px rgba(255, 248, 220, 0.5)); }
+    to   { filter: drop-shadow(0 0 28px rgba(255, 248, 220, 0.9)); }
+  }
+
+  .orbit-group {
+    transform-origin: 100px 100px;
+    animation: orbit 12s linear infinite;
+  }
+  @keyframes orbit {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+
+  .butterfly {
+    animation: flyAround 5s ease-in-out infinite;
+  }
+  @keyframes flyAround {
+    0%, 100% { transform: translate(0, 0); }
+    25%      { transform: translate(15px, -12px); }
+    50%      { transform: translate(0, -22px); }
+    75%      { transform: translate(-15px, -12px); }
+  }
+
+  .wing-left {
+    transform-origin: 100px 100px;
+    animation: flapLeft 0.35s ease infinite alternate;
+  }
+  .wing-right {
+    transform-origin: 100px 100px;
+    animation: flapRight 0.35s ease infinite alternate;
+  }
+  @keyframes flapLeft {
+    from { transform: scaleX(1); }
+    to   { transform: scaleX(0.4); }
+  }
+  @keyframes flapRight {
+    from { transform: scaleX(1); }
+    to   { transform: scaleX(0.4); }
+  }
+
+  .steam {
+    animation: steam 2.8s ease infinite;
+    transform-origin: 50% 100%;
+  }
+  .steam-2 { animation-delay: 0.6s; }
+  .steam-3 { animation-delay: 1.2s; }
+
+  @keyframes steam {
+    0%   { opacity: 0; transform: translateY(0) scaleX(1); }
+    30%  { opacity: 0.7; }
+    100% { opacity: 0; transform: translateY(-45px) scaleX(1.6); }
+  }
+
+  .wave-path {
+    animation: waveMove 4s linear infinite;
+  }
+  @keyframes waveMove {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-100px); }
+  }
+
+  /* Cubo 3D */
+  .cube-stage {
+    width: 120px;
+    height: 120px;
+    perspective: 600px;
+    margin: 1rem auto;
+  }
+  .cube {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    animation: cubeRotate 12s linear infinite;
+  }
+  @keyframes cubeRotate {
+    0%   { transform: rotateX(0) rotateY(0); }
+    100% { transform: rotateX(360deg) rotateY(360deg); }
+  }
+  .cube-face {
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    border: 1.5px solid rgba(255,255,255,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    backdrop-filter: blur(4px);
+  }
+  .cube-face.front  { transform: translateZ(60px); background: rgba(201,123,95,0.35); }
+  .cube-face.back   { transform: rotateY(180deg) translateZ(60px); background: rgba(74,111,165,0.35); }
+  .cube-face.right  { transform: rotateY(90deg) translateZ(60px); background: rgba(245,230,211,0.35); }
+  .cube-face.left   { transform: rotateY(-90deg) translateZ(60px); background: rgba(212,165,116,0.35); }
+  .cube-face.top    { transform: rotateX(90deg) translateZ(60px); background: rgba(255,248,240,0.4); }
+  .cube-face.bottom { transform: rotateX(-90deg) translateZ(60px); background: rgba(139,90,60,0.4); }
+
+  /* ===== Sobre ===== */
+  .envelope-wrapper {
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    user-select: none;
+  }
+
+  .envelope-wrapper:active { transform: scale(0.97); }
+
+  .envelope-svg {
+    width: 300px;
+    max-width: 80vw;
+    filter: drop-shadow(0 15px 45px rgba(0,0,0,0.4));
+  }
+
+  .envelope-flap {
+    transform-origin: 50% 0%;
+    transform: rotateX(0deg);
+    transition: transform 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .envelope-wrapper.opened .envelope-flap {
+    transform: rotateX(180deg);
+  }
+
+  .envelope-letter {
+    opacity: 0;
+    transform: translateY(0);
+    transition: all 0.9s ease 0.3s;
+  }
+
+  .envelope-wrapper.opened .envelope-letter {
+    opacity: 1;
+    transform: translateY(-40px);
+  }
+
+  .envelope-hint {
+    margin-top: 2rem;
+    font-size: 0.9rem;
+    opacity: 0.7;
+    animation: pulse 2s ease infinite;
+    letter-spacing: 0.05em;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.45; }
+    50%      { opacity: 1; }
+  }
+
+  .envelope-message {
+    position: absolute;
+    top: -90px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255,248,240,0.95);
+    color: #8B5A3C;
+    padding: 1rem 1.5rem;
+    border-radius: 15px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    white-space: nowrap;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    opacity: 0;
+    transition: opacity 0.5s ease 0.6s, transform 0.5s ease 0.6s;
+    pointer-events: none;
+  }
+
+  .envelope-wrapper.opened .envelope-message {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-10px);
+  }
+
+  /* Canvas para estrellas del sobre */
+  #envelope-stars {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 50;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+
+  #envelope-stars.active {
+    opacity: 1;
+  }
+
+  /* ===== Pantalla final ===== */
+  #final-screen {
+    position: fixed;
+    inset: 0;
+    background: #000;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 200;
+    opacity: 0;
+    transition: opacity 0.8s ease;
+    padding: 2rem;
+    text-align: center;
+  }
+
+  #final-screen.show {
+    display: flex;
+    opacity: 1;
+  }
+
+  #final-screen .final-text {
+    font-size: clamp(1.2rem, 5.5vw, 1.7rem);
+    max-width: 500px;
+    line-height: 1.6;
+    color: #FFF8F0;
+    opacity: 0;
+    animation: finalTextIn 1s ease 0.3s forwards;
+    font-weight: 300;
+  }
+
+  #final-screen .final-image {
+    width: 100px;
+    height: 100px;
+    margin-top: 2rem;
+    opacity: 0;
+    animation: finalTextIn 1s ease 0.6s forwards;
+    filter: drop-shadow(0 0 20px rgba(255, 200, 150, 0.5));
+  }
+
+  @keyframes finalTextIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ===== Botón volver arriba ===== */
+  #back-top {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    width: 48px;
+    height: 48px;
+    background: rgba(201, 123, 95, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    font-size: 1.3rem;
+    cursor: pointer;
+    z-index: 50;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    opacity: 0;
+  }
+
+  #back-top.visible {
+    display: flex;
+    opacity: 0.85;
+  }
+
+  #back-top:hover { transform: scale(1.1); opacity: 1; }
+
+  /* ===== Indicador de música ===== */
+  #music-indicator {
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 0.5rem 0.9rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    z-index: 50;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    border: 1px solid rgba(255,255,255,0.15);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  #music-indicator.visible { opacity: 0.8; }
+
+  .music-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #39FF14;
+    animation: musicDot 1.5s ease infinite;
+  }
+
+  @keyframes musicDot {
+    0%,100% { opacity: 0.4; transform: scale(0.8); }
+    50%     { opacity: 1; transform: scale(1.2); }
+  }
+
+  /* ===== Tablet ===== */
+  @media (min-width: 768px) {
+    .visual-container { max-width: 440px; }
+    .envelope-svg { width: 380px; }
+    .hero .message { font-size: 1.15rem; }
+    #final-screen .final-image { width: 130px; height: 130px; }
+  }
+
+  /* ===== Reducción de movimiento ===== */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-gradient"></div>
+<canvas id="stars-canvas"></canvas>
+
+<div id="hint">Baja para ver mas cosas! :)</div>
+
+<div id="music-indicator">
+  <span class="music-dot"></span>
+  <span>música</span>
+</div>
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+  <h1>Hola, Selena</h1>
+  <p class="message">
+    Se que no hablamos mucho y que cuando nos vemos es un poco incómodo, pero realmente quiero ser tu amiga, y pasar tiempo con vos, tal vez no soy la persona más divertida del mundo, pero bueno, quiero que sepas que cada momento con vos significa mucho para mí. Ah y estoy practicando programación :) así que hice un sitio web con este mensaje xdd
+  </p>
+  <div class="scroll-indicator" aria-hidden="true"></div>
+</section>
+
+<!-- ===== Sección 1: Flor ===== -->
+<section class="scroll-section">
+  <div class="visual-container reveal">
+    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <path d="M100 200 Q100 160 100 110" stroke="#5a7a4a" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+      <ellipse cx="78" cy="145" rx="18" ry="7" fill="#7a9a5a" transform="rotate(-25 78 145)" opacity="0.85"/>
+      <ellipse cx="122" cy="165" rx="18" ry="7" fill="#7a9a5a" transform="rotate(25 122 165)" opacity="0.85"/>
+      <g transform="translate(100 85)">
+        <ellipse class="flower-petal" cx="0" cy="-28" rx="18" ry="32" fill="#C97B5F" opacity="0.9"/>
+        <ellipse class="flower-petal" cx="0" cy="-28" rx="18" ry="32" fill="#D4856A" opacity="0.9" transform="rotate(60)"/>
+        <ellipse class="flower-petal" cx="0" cy="-28" rx="18" ry="32" fill="#C97B5F" opacity="0.9" transform="rotate(120)"/>
+        <ellipse class="flower-petal" cx="0" cy="-28" rx="18" ry="32" fill="#D4856A" opacity="0.9" transform="rotate(180)"/>
+        <ellipse class="flower-petal" cx="0" cy="-28" rx="18" ry="32" fill="#C97B5F" opacity="0.9" transform="rotate(240)"/>
+        <ellipse class="flower-petal" cx="0" cy="-28" rx="18" ry="32" fill="#D4856A" opacity="0.9" transform="rotate(300)"/>
+        <circle cx="0" cy="0" r="14" fill="#F5E6D3"/>
+        <circle cx="0" cy="0" r="9" fill="#D4A574"/>
+        <circle cx="-3" cy="-2" r="2" fill="#8B5A3C" opacity="0.6"/>
+        <circle cx="3" cy="2" r="2" fill="#8B5A3C" opacity="0.6"/>
+      </g>
+    </svg>
+  </div>
+  <p class="reveal-section-text reveal">Cada pétalo, un momento contigo</p>
+</section>
+
+<!-- ===== Sección 2: Corazón ===== -->
+<section class="scroll-section">
+  <div class="visual-container reveal">
+    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="heartGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#D4856A"/>
+          <stop offset="100%" stop-color="#C97B5F"/>
+        </linearGradient>
+      </defs>
+      <g class="heart-beat">
+        <path d="M100 175 C 55 145, 25 110, 25 72 C 25 47, 47 27, 73 27 C 88 27, 100 38, 100 50 C 100 38, 112 27, 127 27 C 153 27, 175 47, 175 72 C 175 110, 145 145, 100 175 Z"
+              fill="url(#heartGrad)" stroke="#FFE5D0" stroke-width="1.5" opacity="0.95"/>
+        <ellipse cx="75" cy="55" rx="12" ry="18" fill="#FFF" opacity="0.25" transform="rotate(-30 75 55)"/>
+      </g>
+    </svg>
+  </div>
+  <p class="reveal-section-text reveal">Cada latido recuerda que valió la pena</p>
+</section>
+
+<!-- ===== Sección 3: Luna y estrellas ===== -->
+<section class="scroll-section">
+  <div class="visual-container reveal">
+    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <circle class="moon-glow" cx="100" cy="100" r="48" fill="#FFF8DC"/>
+      <circle cx="82" cy="85" r="7" fill="#E8D8B8" opacity="0.55"/>
+      <circle cx="115" cy="108" r="5" fill="#E8D8B8" opacity="0.55"/>
+      <circle cx="92" cy="120" r="6" fill="#E8D8B8" opacity="0.5"/>
+      <circle cx="120" cy="80" r="3" fill="#E8D8B8" opacity="0.4"/>
+      <g class="orbit-group">
+        <circle cx="100" cy="28" r="3.5" fill="#FF6EC7"/>
+        <circle cx="172" cy="100" r="2.5" fill="#00FFFF"/>
+        <circle cx="100" cy="172" r="3" fill="#39FF14"/>
+        <circle cx="28" cy="100" r="2.5" fill="#FFFF33"/>
+        <circle cx="151" cy="49" r="2" fill="#BF5FFF"/>
+        <circle cx="151" cy="151" r="2" fill="#FF9F00"/>
+      </g>
+    </svg>
+  </div>
+  <p class="reveal-section-text reveal">Como la luna, siempre está… aunque no la mires</p>
+</section>
+
+<!-- ===== Sección 4: Mariposas (gif-like) ===== -->
+<section class="scroll-section">
+  <div class="visual-container reveal">
+    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <g class="butterfly">
+        <g class="wing-left">
+          <path d="M100 100 Q 60 60 40 90 Q 35 120 70 110 Q 85 105 100 100 Z" fill="#C97B5F" opacity="0.9"/>
+          <path d="M100 100 Q 70 130 60 155 Q 75 160 90 130 Q 95 115 100 100 Z" fill="#D4856A" opacity="0.85"/>
+          <circle cx="55" cy="95" r="4" fill="#FFF8F0" opacity="0.7"/>
+          <circle cx="72" cy="145" r="3" fill="#FFF8F0" opacity="0.7"/>
+        </g>
+        <g class="wing-right">
+          <path d="M100 100 Q 140 60 160 90 Q 165 120 130 110 Q 115 105 100 100 Z" fill="#C97B5F" opacity="0.9"/>
+          <path d="M100 100 Q 130 130 140 155 Q 125 160 110 130 Q 105 115 100 100 Z" fill="#D4856A" opacity="0.85"/>
+          <circle cx="145" cy="95" r="4" fill="#FFF8F0" opacity="0.7"/>
+          <circle cx="128" cy="145" r="3" fill="#FFF8F0" opacity="0.7"/>
+        </g>
+        <ellipse cx="100" cy="100" rx="3" ry="35" fill="#3a2a1a"/>
+        <circle cx="100" cy="68" r="4" fill="#3a2a1a"/>
+        <line x1="100" y1="65" x2="92" y2="55" stroke="#3a2a1a" stroke-width="1.5"/>
+        <line x1="100" y1="65" x2="108" y2="55" stroke="#3a2a1a" stroke-width="1.5"/>
+      </g>
+    </svg>
+  </div>
+  <p class="reveal-section-text reveal">Libre, ligera… así quiero que sea nuestra amistad</p>
+</section>
+
+<!-- ===== Sección 5: Café humeante ===== -->
+<section class="scroll-section">
+  <div class="visual-container reveal">
+    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <!-- Vapor -->
+      <g opacity="0.6">
+        <ellipse class="steam" cx="80" cy="70" rx="6" ry="14" fill="#FFF8F0" opacity="0.5"/>
+        <ellipse class="steam steam-2" cx="100" cy="70" rx="6" ry="14" fill="#FFF8F0" opacity="0.5"/>
+        <ellipse class="steam steam-3" cx="120" cy="70" rx="6" ry="14" fill="#FFF8F0" opacity="0.5"/>
+      </g>
+      <!-- Taza -->
+      <path d="M55 100 L60 165 Q60 175 70 175 L130 175 Q140 175 140 165 L145 100 Z" fill="#F5E6D3"/>
+      <path d="M55 100 L145 100 L142 110 L58 110 Z" fill="#D4A574"/>
+      <ellipse cx="100" cy="100" rx="45" ry="6" fill="#8B5A3C"/>
+      <ellipse cx="100" cy="100" rx="38" ry="4" fill="#5a3a24"/>
+      <!-- Asa -->
+      <path d="M145 115 Q 170 120 170 140 Q 170 160 145 160" stroke="#D4A574" stroke-width="6" fill="none" stroke-linecap="round"/>
+      <!-- Plato -->
+      <ellipse cx="100" cy="180" rx="60" ry="8" fill="#E8D5B8"/>
+      <ellipse cx="100" cy="180" rx="50" ry="5" fill="#D4A574" opacity="0.5"/>
+    </svg>
+  </div>
+  <p class="reveal-section-text reveal">Un café, una charla, sin apuros… así me imagino un día con vos</p>
+</section>
+
+<!-- ===== Sección 6: Ondas ===== -->
+<section class="scroll-section">
+  <div class="visual-container reveal">
+    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" style="overflow: visible;">
+      <defs>
+        <linearGradient id="waveGrad1" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#4A6FA5" stop-opacity="0.8"/>
+          <stop offset="50%" stop-color="#C97B5F" stop-opacity="0.9"/>
+          <stop offset="100%" stop-color="#D4A574" stop-opacity="0.8"/>
+        </linearGradient>
+        <linearGradient id="waveGrad2" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#FF6EC7" stop-opacity="0.7"/>
+          <stop offset="100%" stop-color="#00FFFF" stop-opacity="0.7"/>
+        </linearGradient>
+      </defs>
+      <g style="transform: translateX(0);">
+        <path class="wave-path" d="M-100 100 Q -75 70 -50 100 T 0 100 T 50 100 T 100 100 T 150 100 T 200 100 T 250 100 T 300 100"
+              stroke="url(#waveGrad1)" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path class="wave-path" d="M-100 110 Q -75 85 -50 110 T 0 110 T 50 110 T 100 110 T 150 110 T 200 110 T 250 110 T 300 110"
+              stroke="url(#waveGrad2)" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.6" style="animation-delay: -1s;"/>
+        <path class="wave-path" d="M-100 90 Q -75 110 -50 90 T 0 90 T 50 90 T 100 90 T 150 90 T 200 90 T 250 90 T 300 90"
+              stroke="#FFF8F0" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.4" style="animation-delay: -2s;"/>
+      </g>
+      <!-- Estrellas decorativas -->
+      <circle cx="40" cy="50" r="2" fill="#FF6EC7" opacity="0.8"/>
+      <circle cx="160" cy="60" r="2" fill="#00FFFF" opacity="0.8"/>
+      <circle cx="170" cy="140" r="2.5" fill="#39FF14" opacity="0.8"/>
+      <circle cx="30" cy="150" r="2" fill="#FFFF33" opacity="0.8"/>
+    </svg>
+  </div>
+  <p class="reveal-section-text reveal">Todo fluye mejor cuando estás cerca</p>
+</section>
+
+<!-- ===== Sección 7: Cubo 3D ===== -->
+<section class="scroll-section">
+  <div class="reveal" style="text-align: center;">
+    <div class="cube-stage">
+      <div class="cube">
+        <div class="cube-face front">✦</div>
+        <div class="cube-face back">✧</div>
+        <div class="cube-face right">♥</div>
+        <div class="cube-face left">✿</div>
+        <div class="cube-face top">★</div>
+        <div class="cube-face bottom">☺</div>
+      </div>
+    </div>
+  </div>
+  <p class="reveal-section-text reveal">Muchas caras… pero siempre yo, siempre queriendo ser tu amiga</p>
+</section>
+
+<!-- ===== Sección 8: Sobre final ===== -->
+<section class="scroll-section" id="envelope-section">
+  <div class="reveal" style="text-align: center;">
+    <p class="reveal-section-text" style="margin-top: 0; margin-bottom: 2.5rem; font-size: 1.15rem;">Toca el sobre…</p>
+    <div class="envelope-wrapper" id="envelope">
+      <div class="envelope-message">próximamente una nueva página web :v</div>
+      <svg class="envelope-svg" viewBox="0 0 300 220" xmlns="http://www.w3.org/2000/svg">
+        <!-- Carta -->
+        <g class="envelope-letter">
+          <rect x="50" y="70" width="200" height="120" fill="#FFF8F0" stroke="#D4A574" stroke-width="1" rx="3"/>
+          <line x1="70" y1="95" x2="230" y2="95" stroke="#C97B5F" stroke-width="1" opacity="0.4"/>
+          <line x1="70" y1="110" x2="210" y2="110" stroke="#C97B5F" stroke-width="1" opacity="0.4"/>
+          <line x1="70" y1="125" x2="220" y2="125" stroke="#C97B5F" stroke-width="1" opacity="0.4"/>
+          <line x1="70" y1="140" x2="190" y2="140" stroke="#C97B5F" stroke-width="1" opacity="0.4"/>
+          <text x="150" y="170" text-anchor="middle" font-family="Helvetica" font-size="11" fill="#8B5A3C" font-style="italic">para Selena ♥</text>
+        </g>
+        <!-- Cuerpo del sobre -->
+        <path d="M40 100 L150 175 L260 100 L260 200 L40 200 Z" fill="#C97B5F"/>
+        <path d="M40 100 L150 175 L260 100 L260 110 L150 185 L40 110 Z" fill="#A86A4F" opacity="0.6"/>
+        <!-- Solapa -->
+        <path class="envelope-flap" d="M40 100 L150 30 L260 100 L150 175 Z" fill="#D4856A" stroke="#A86A4F" stroke-width="1"/>
+        <path class="envelope-flap" d="M40 100 L150 30 L260 100" fill="none" stroke="#A86A4F" stroke-width="1" opacity="0.5"/>
+        <!-- Sello -->
+        <circle cx="150" cy="60" r="12" fill="#8B5A3C" opacity="0.8"/>
+        <text x="150" y="64" text-anchor="middle" font-family="Helvetica" font-size="9" fill="#FFF8F0" font-weight="bold">♥</text>
+      </svg>
+    </div>
+    <p class="envelope-hint">↑ Toca el sobre ↑</p>
+  </div>
+</section>
+
+<!-- Canvas para explosión de estrellas -->
+<canvas id="envelope-stars"></canvas>
+
+<!-- ===== Pantalla final ===== -->
+<div id="final-screen">
+  <p class="final-text">Espero que seamos amigas por mucho tiempo</p>
+  <svg class="final-image" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="finalGrad">
+        <stop offset="0%" stop-color="#FFE5D0"/>
+        <stop offset="100%" stop-color="#C97B5F"/>
+      </radialGradient>
+    </defs>
+    <path d="M50 85 C 25 65, 12 50, 12 32 C 12 20, 22 12, 32 12 C 40 12, 46 18, 50 24 C 54 18, 60 12, 68 12 C 78 12, 88 20, 88 32 C 88 50, 75 65, 50 85 Z"
+          fill="url(#finalGrad)" stroke="#FFF8F0" stroke-width="1.5"/>
+    <ellipse cx="38" cy="28" rx="6" ry="9" fill="#FFF" opacity="0.35" transform="rotate(-30 38 28)"/>
+  </svg>
+</div>
+
+<!-- ===== Botón volver arriba ===== -->
+<button id="back-top" aria-label="Volver arriba">↑</button>
+
+<script>
+/* ==========================================================
+   1. LLUVIA DE ESTRELLAS MULTICOLOR (fondo, todo el tiempo)
+   ========================================================== */
+const starsCanvas = document.getElementById('stars-canvas');
+const sctx = starsCanvas.getContext('2d');
+
+let starsW, starsH;
+const NEON_COLORS = ['#FF6EC7', '#00FFFF', '#39FF14', '#FFFF33', '#FF9F00', '#BF5FFF', '#FF1493', '#00FF7F'];
+
+function resizeStars() {
+  starsW = starsCanvas.width = window.innerWidth;
+  starsH = starsCanvas.height = window.innerHeight;
+}
+resizeStars();
+window.addEventListener('resize', resizeStars);
+
+// Pocas estrellas, grandes, con opacidad
+const stars = [];
+const NUM_STARS = 35;
+
+for (let i = 0; i < NUM_STARS; i++) {
+  stars.push({
+    x: Math.random() * starsW,
+    y: Math.random() * starsH,
+    size: Math.random() * 2.5 + 1.5,        // grandes
+    speed: Math.random() * 0.4 + 0.15,       // lentas
+    color: NEON_COLORS[Math.floor(Math.random() * NEON_COLORS.length)],
+    opacity: Math.random() * 0.5 + 0.4,      // con opacidad
+    twinkle: Math.random() * Math.PI * 2,
+    twinkleSpeed: Math.random() * 0.03 + 0.01
+  });
+}
+
+function drawStars() {
+  sctx.clearRect(0, 0, starsW, starsH);
+
+  stars.forEach(s => {
+    s.y += s.speed;
+    s.twinkle += s.twinkleSpeed;
+
+    if (s.y > starsH + 10) {
+      s.y = -10;
+      s.x = Math.random() * starsW;
+    }
+
+    const alpha = s.opacity * (0.6 + 0.4 * Math.sin(s.twinkle));
+
+    // Resplandor
+    const grad = sctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.size * 4);
+    grad.addColorStop(0, s.color);
+    grad.addColorStop(0.4, s.color + '40');
+    grad.addColorStop(1, 'rgba(0,0,0,0)');
+    sctx.globalAlpha = alpha * 0.4;
+    sctx.fillStyle = grad;
+    sctx.beginPath();
+    sctx.arc(s.x, s.y, s.size * 4, 0, Math.PI * 2);
+    sctx.fill();
+
+    // Núcleo
+    sctx.globalAlpha = alpha;
+    sctx.fillStyle = s.color;
+    sctx.beginPath();
+    sctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+    sctx.fill();
+  });
+
+  sctx.globalAlpha = 1;
+  requestAnimationFrame(drawStars);
+}
+drawStars();
+
+/* ==========================================================
+   2. REVEAL ON SCROLL
+   ========================================================== */
+const revealElements = document.querySelectorAll('.reveal');
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    } else {
+      entry.target.classList.remove('visible');
+    }
+  });
+}, { threshold: 0.15, rootMargin: '0px 0px -50px 0px' });
+
+revealElements.forEach(el => revealObserver.observe(el));
+
+/* ==========================================================
+   3. MÚSICA AMBIENTAL (Web Audio API)
+   ========================================================== */
+let audioCtx = null;
+let musicStarted = false;
+let masterGain = null;
+const musicIndicator = document.getElementById('music-indicator');
+
+function startMusic() {
+  if (musicStarted) return;
+  musicStarted = true;
+
+  try {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  } catch (e) {
+    return;
+  }
+
+  masterGain = audioCtx.createGain();
+  masterGain.gain.value = 0;
+  masterGain.gain.linearRampToValueAtTime(0.12, audioCtx.currentTime + 2);
+
+  // Reverb simple con delay
+  const delay = audioCtx.createDelay(2);
+  delay.delayTime.value = 0.4;
+  const feedback = audioCtx.createGain();
+  feedback.gain.value = 0.35;
+  const wetGain = audioContext_createGain_safe(audioCtx);
+  wetGain.gain.value = 0.4;
+
+  delay.connect(feedback);
+  feedback.connect(delay);
+  delay.connect(wetGain);
+  wetGain.connect(masterGain);
+
+  masterGain.connect(audioCtx.destination);
+
+  // Progresión de acordes cálida (La menor → Fa → Do → Sol)
+  const chords = [
+    [220.00, 261.63, 329.63],   // La menor
+    [174.61, 220.00, 261.63],   // Fa mayor
+    [196.00, 246.94, 293.66],   // Sol mayor
+    [261.63, 329.63, 392.00],   // Do mayor
+  ];
+
+  // Melodía suave (notas altas)
+  const melody = [659.25, 587.33, 523.25, 587.33, 659.25, 783.99, 659.25, 523.25];
+
+  let chordIndex = 0;
+  let melodyIndex = 0;
+
+  function playChord() {
+    if (!audioCtx) return;
+    const now = audioCtx.currentTime;
+    const chord = chords[chordIndex];
+
+    chord.forEach((freq, i) => {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.linearRampToValueAtTime(0.18, now + 1.5);
+      gain.gain.linearRampToValueAtTime(0, now + 4.5);
+
+      osc.connect(gain);
+      gain.connect(masterGain);
+      gain.connect(delay);
+
+      osc.start(now);
+      osc.stop(now + 4.5);
+    });
+
+    // Melodía
+    for (let i = 0; i < 4; i++) {
+      const mNow = now + i * 1.0;
+      const mFreq = melody[(melodyIndex + i) % melody.length];
+
+      const mOsc = audioCtx.createOscillator();
+      const mGain = audioCtx.createGain();
+
+      mOsc.type = 'triangle';
+      mOsc.frequency.value = mFreq;
+
+      mGain.gain.setValueAtTime(0, mNow);
+      mGain.gain.linearRampToValueAtTime(0.08, mNow + 0.1);
+      mGain.gain.linearRampToValueAtTime(0, mNow + 0.9);
+
+      mOsc.connect(mGain);
+      mGain.connect(masterGain);
+      mGain.connect(delay);
+
+      mOsc.start(mNow);
+      mOsc.stop(mNow + 0.9);
+    }
+
+    melodyIndex += 4;
+    chordIndex = (chordIndex + 1) % chords.length;
+  }
+
+  playChord();
+  setInterval(playChord, 4000);
+
+  musicIndicator.classList.add('visible');
+}
+
+// Helper para crear gain de forma segura
+function audioContext_createGain_safe(ctx) {
+  return ctx.createGain();
+}
+
+// Iniciar música al primer scroll o click
+function tryStartMusic() {
+  startMusic();
+  window.removeEventListener('scroll', tryStartMusic);
+  window.removeEventListener('click', tryStartMusic);
+  window.removeEventListener('touchstart', tryStartMusic);
+}
+window.addEventListener('scroll', tryStartMusic, { passive: true });
+window.addEventListener('click', tryStartMusic);
+window.addEventListener('touchstart', tryStartMusic, { passive: true });
+
+/* ==========================================================
+   4. SOBRE INTERACTIVO
+   ========================================================== */
+const envelope = document.getElementById('envelope');
+const envelopeStarsCanvas = document.getElementById('envelope-stars');
+const ectx = envelopeStarsCanvas.getContext('2d');
+const finalScreen = document.getElementById('final-screen');
+const backTop = document.getElementById('back-top');
+
+let envelopeOpened = false;
+
+function resizeEnvelopeCanvas() {
+  envelopeStarsCanvas.width = window.innerWidth;
+  envelopeStarsCanvas.height = window.innerHeight;
+}
+resizeEnvelopeCanvas();
+window.addEventListener('resize', resizeEnvelopeCanvas);
+
+// Sistema de partículas para explosión del sobre
+let envParticles = [];
+let envAnimationActive = false;
+let envAnimationStartTime = 0;
+
+function spawnEnvelopeStars(x, y) {
+  for (let i = 0; i < 120; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = Math.random() * 8 + 3;
+    envParticles.push({
+      x: x,
+      y: y,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - 2,
+      size: Math.random() * 4 + 2,
+      color: NEON_COLORS[Math.floor(Math.random() * NEON_COLORS.length)],
+      life: 1,
+      gravity: 0.12
+    });
+  }
+}
+
+function animateEnvelopeStars() {
+  ectx.clearRect(0, 0, envelopeStarsCanvas.width, envelopeStarsCanvas.height);
+
+  envParticles.forEach(p => {
+    p.x += p.vx;
+    p.y += p.vy;
+    p.vy += p.gravity;
+    p.vx *= 0.99;
+    p.life -= 0.012;
+
+    if (p.life > 0) {
+      // Resplandor
+      const grad = ectx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 3);
+      grad.addColorStop(0, p.color);
+      grad.addColorStop(1, 'rgba(0,0,0,0)');
+      ectx.globalAlpha = p.life * 0.5;
+      ectx.fillStyle = grad;
+      ectx.beginPath();
+      ectx.arc(p.x, p.y, p.size * 3, 0, Math.PI * 2);
+      ectx.fill();
+
+      // Núcleo
+      ectx.globalAlpha = p.life;
+      ectx.fillStyle = p.color;
+      ectx.beginPath();
+      ectx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ectx.fill();
+    }
+  });
+
+  ectx.globalAlpha = 1;
+  envParticles = envParticles.filter(p => p.life > 0);
+
+  const elapsed = (Date.now() - envAnimationStartTime) / 1000;
+
+  if (elapsed > 3.5) {
+    envelopeStarsCanvas.classList.remove('active');
+    envAnimationActive = false;
+    // Mostrar pantalla final
+    setTimeout(() => {
+      finalScreen.classList.add('show');
+      setTimeout(() => {
+        finalScreen.classList.remove('show');
+        backTop.classList.add('visible');
+      }, 2500);
+    }, 500);
+    return;
+  }
+
+  requestAnimationFrame(animateEnvelopeStars);
+}
+
+envelope.addEventListener('click', () => {
+  if (envelopeOpened) return;
+  envelopeOpened = true;
+  envelope.classList.add('opened');
+
+  // Esperar a que se abra el sobre y luego explotar estrellas
+  setTimeout(() => {
+    const rect = envelope.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+
+    spawnEnvelopeStars(cx, cy);
+
+    // Más explosiones escalonadas
+    setTimeout(() => spawnEnvelopeStars(cx - 40, cy - 20), 200);
+    setTimeout(() => spawnEnvelopeStars(cx + 40, cy - 20), 400);
+    setTimeout(() => spawnEnvelopeStars(cx, cy - 40), 600);
+
+    envelopeStarsCanvas.classList.add('active');
+    envAnimationActive = true;
+    envAnimationStartTime = Date.now();
+    animateEnvelopeStars();
+  }, 900);
+});
+
+/* ==========================================================
+   5. BOTÓN VOLVER ARRIBA
+   ========================================================== */
+backTop.addEventListener('click', () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  backTop.classList.remove('visible');
+});
+
+// Mostrar/ocultar botón según scroll
+window.addEventListener('scroll', () => {
+  if (window.scrollY > window.innerHeight * 1.5 && envelopeOpened) {
+    backTop.classList.add('visible');
+  }
+}, { passive: true });
+
+/* ==========================================================
+   6. PARALLAX SUTIL EN HERO
+   ========================================================== */
+const hero = document.querySelector('.hero');
+window.addEventListener('scroll', () => {
+  const scrolled = window.scrollY;
+  if (scrolled < window.innerHeight) {
+    hero.style.transform = `translateY(${scrolled * 0.3}px)`;
+    hero.style.opacity = 1 - (scrolled / window.innerHeight) * 0.8;
+  }
+}, { passive: true });
+</script>
+</body>
+</html>
